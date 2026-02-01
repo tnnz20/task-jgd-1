@@ -1,8 +1,9 @@
-.PHONY: run build start clean test test-cover test-verbose
+.PHONY: run build start clean test test-cover test-verbose docker-build docker-run docker-stop
 
 # Application name
 APP_NAME=app
 BUILD_DIR=bin
+DOCKER_IMAGE=category-api
 
 # Run the application directly (development)
 run:
@@ -55,6 +56,23 @@ lint:
 tidy:
 	go mod tidy
 
+# Docker commands
+docker-build:
+	@echo "Building Docker image..."
+	docker build -t $(DOCKER_IMAGE) .
+	@echo "Docker image built: $(DOCKER_IMAGE)"
+
+docker-run:
+	@echo "Running Docker container..."
+	docker run -d -p 8080:8080 --name $(DOCKER_IMAGE) $(DOCKER_IMAGE)
+	@echo "Container started at http://localhost:8080"
+
+docker-stop:
+	@echo "Stopping Docker container..."
+	docker stop $(DOCKER_IMAGE)
+	docker rm $(DOCKER_IMAGE)
+	@echo "Container stopped and removed"
+
 # Help
 help:
 	@echo "Available commands:"
@@ -67,4 +85,7 @@ help:
 	@echo "  make test-cover   - Run tests with coverage"
 	@echo "  make fmt          - Format code"
 	@echo "  make lint         - Lint code"
+	@echo "  make docker-build - Build Docker image"
+	@echo "  make docker-run   - Run Docker container"
+	@echo "  make docker-stop  - Stop and remove Docker container"
 	@echo "  make tidy         - Tidy dependencies"
