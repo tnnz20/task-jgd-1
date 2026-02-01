@@ -26,27 +26,33 @@ type BootstrapConfig struct {
 func Bootstrap(config *BootstrapConfig) {
 	// Setup repositories based on available database
 	var categoryRepo repository.CategoryRepositoryInterface
+	var productRepo repository.ProductRepositoryInterface
 
 	if config.DB != nil {
 		// Use PostgreSQL repository
 		config.Logger.Info("Using PostgreSQL repository")
 		categoryRepo = postgres.NewCategoryRepository(config.DB)
+		productRepo = postgres.NewProductRepository(config.DB)
 	} else {
 		// Use in-memory repository
 		config.Logger.Info("Using in-memory repository")
 		categoryRepo = memory.NewCategoryRepository()
+		productRepo = memory.NewProductRepository()
 	}
 
 	// Setup use cases
 	categoryUseCase := usecase.NewCategoryUseCase(categoryRepo, config.Logger)
+	productUseCase := usecase.NewProductUseCase(productRepo, config.Logger)
 
 	// Setup controllers
 	categoryController := deliveryhttp.NewCategoryController(categoryUseCase, config.Logger)
+	productController := deliveryhttp.NewProductController(productUseCase, config.Logger)
 
 	// Setup routes
 	routeConfig := route.RouteConfig{
 		App:                config.App,
 		CategoryController: categoryController,
+		ProductController:  productController,
 	}
 	routeConfig.Setup()
 }

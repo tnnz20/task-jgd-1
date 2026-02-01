@@ -10,11 +10,13 @@ import (
 type RouteConfig struct {
 	App                *http.ServeMux
 	CategoryController *deliveryhttp.CategoryController
+	ProductController  *deliveryhttp.ProductController
 }
 
 // Setup configures all routes
 func (c *RouteConfig) Setup() {
 	c.SetupCategoryRoute()
+	c.SetupProductRoute()
 }
 
 // SetupCategoryRoute configures category routes
@@ -31,4 +33,13 @@ func (c *RouteConfig) SetupCategoryRoute() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"healthy"}`))
 	})
+}
+
+// SetupProductRoute configures product routes
+func (c *RouteConfig) SetupProductRoute() {
+	c.App.HandleFunc("POST /api/products", c.ProductController.Create)
+	c.App.HandleFunc("GET /api/products", c.ProductController.List)
+	c.App.HandleFunc("GET /api/products/{id}", c.ProductController.Get)
+	c.App.HandleFunc("PUT /api/products/{id}", c.ProductController.Update)
+	c.App.HandleFunc("DELETE /api/products/{id}", c.ProductController.Delete)
 }
