@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tnnz20/jgd-task-1/internal/config"
 )
 
@@ -37,6 +38,15 @@ func main() {
 		slog.String("log_level", appConfig.App.LogLevel),
 	)
 
+	// Initialize database connection (optional - only if DB_HOST is provided)
+	var db *pgxpool.Pool
+	if appConfig.Database.Host != "" {
+		db = config.NewDatabase(v, logger)
+		defer config.CloseDatabase(db, logger)
+	} else {
+		logger.Warn("Database not configured, using in-memory repository")
+	}
+
 	// Create new ServeMux
 	app := http.NewServeMux()
 
@@ -45,6 +55,7 @@ func main() {
 		App:    app,
 		Logger: logger,
 		Config: v,
+		DB:     db,
 	})
 
 	// Create server with configuration
