@@ -1,6 +1,6 @@
-# Category API - Go Clean Architecture
+# Category & Product API - Go Clean Architecture
 
-A simple RESTful CRUD API built with Go using Clean Architecture principles. This project demonstrates best practices for structuring Go applications with separation of concerns, dependency injection, and testability.
+A RESTful CRUD API built with Go using Clean Architecture principles. This project demonstrates best practices for structuring Go applications with separation of concerns, dependency injection, and testability. Includes multi-entity support with categories and products.
 
 ## Tech Stack
 
@@ -56,23 +56,34 @@ task-1/
 │   │   └── logger.go                  # Structured logger configuration
 │   ├── delivery/
 │   │   └── http/
-│   │       ├── category_controller.go # HTTP handlers
+│   │       ├── category_controller.go # Category HTTP handlers
+│   │       ├── product_controller.go  # Product HTTP handlers
 │   │       ├── helper.go              # Shared HTTP utilities
 │   │       └── route/
 │   │           └── route.go           # Route definitions
 │   ├── entity/
-│   │   └── category_entity.go         # Domain entities
+│   │   ├── category_entity.go         # Category domain entity
+│   │   └── product_entity.go          # Product domain entity
 │   ├── model/
 │   │   ├── model.go                   # Generic response wrapper
-│   │   ├── category_model.go          # Request/Response DTOs
+│   │   ├── category_model.go          # Category Request/Response DTOs
+│   │   ├── product_model.go           # Product Request/Response DTOs
 │   │   └── converter/
-│   │       └── category_converter.go  # Entity ↔ Model converters
+│   │       ├── category_converter.go  # Category Entity ↔ Model converters
+│   │       └── product_converter.go   # Product Entity ↔ Model converters
 │   ├── repository/
-│   │   ├── category_repository.go     # Data access layer
-│   │   └── category_repository_test.go
+│   │   ├── interface.go               # Repository interfaces
+│   │   ├── memory/
+│   │   │   ├── category.go            # In-memory category repository
+│   │   │   └── product.go             # In-memory product repository
+│   │   └── postgres/
+│   │       ├── category.go            # PostgreSQL category repository
+│   │       └── product.go             # PostgreSQL product repository
 │   └── usecase/
-│       ├── category_usecase.go        # Business logic
-│       └── category_usecase_test.go
+│       ├── category_usecase.go        # Category business logic
+│       ├── category_usecase_test.go   # Category usecase tests
+│       ├── product_usecase.go         # Product business logic
+│       └── product_usecase_test.go    # Product usecase tests
 ├── test/
 │   └── category_test.go               # Integration tests
 ├── go.mod
@@ -114,6 +125,16 @@ task-1/
 | GET | `/api/categories/{id}` | Get category by ID |
 | PUT | `/api/categories/{id}` | Update category by ID |
 | DELETE | `/api/categories/{id}` | Delete category by ID |
+
+### Products
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/products` | Create a new product |
+| GET | `/api/products` | Get all products |
+| GET | `/api/products/{id}` | Get product by ID |
+| PUT | `/api/products/{id}` | Update product by ID |
+| DELETE | `/api/products/{id}` | Delete product by ID |
 
 #### Create Category
 
@@ -219,6 +240,133 @@ curl -X PUT http://localhost:8080/api/categories/1 \
 **Request:**
 ```bash
 curl -X DELETE http://localhost:8080/api/categories/1
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": true
+}
+```
+
+## Products API Examples
+
+#### Create Product
+
+**Request:**
+```bash
+curl -X POST http://localhost:8080/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Laptop",
+    "price": 999.99,
+    "stock": 50,
+    "category_id": 1
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Laptop",
+    "price": 999.99,
+    "stock": 50,
+    "category_id": 1,
+    "created_at": 1737783600000,
+    "updated_at": 1737783600000
+  }
+}
+```
+
+#### Get All Products
+
+**Request:**
+```bash
+curl http://localhost:8080/api/products
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Laptop",
+      "price": 999.99,
+      "stock": 50,
+      "category_id": 1,
+      "created_at": 1737783600000,
+      "updated_at": 1737783600000
+    }
+  ]
+}
+```
+
+#### Get Product by ID
+
+**Request:**
+```bash
+curl http://localhost:8080/api/products/1
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Laptop",
+    "price": 999.99,
+    "stock": 50,
+    "category_id": 1,
+    "created_at": 1737783600000,
+    "updated_at": 1737783600000
+  }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "errors": "Product not found"
+}
+```
+
+#### Update Product
+
+**Request:**
+```bash
+curl -X PUT http://localhost:8080/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Laptop",
+    "price": 1099.99,
+    "stock": 45,
+    "category_id": 1
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Updated Laptop",
+    "price": 1099.99,
+    "stock": 45,
+    "category_id": 1,
+    "created_at": 1737783600000,
+    "updated_at": 1737783660000
+  }
+}
+```
+
+#### Delete Product
+
+**Request:**
+```bash
+curl -X DELETE http://localhost:8080/api/products/1
 ```
 
 **Response (200 OK):**
