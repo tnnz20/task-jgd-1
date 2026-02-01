@@ -3,30 +3,31 @@ package config
 import (
 	"log/slog"
 	"os"
+
+	"github.com/spf13/viper"
 )
 
-// NewLogger creates a new structured logger using slog (Go 1.21+)
-func NewLogger() *slog.Logger {
-	// Get log level from environment variable
-	level := os.Getenv("LOG_LEVEL")
+// NewLogger creates a new structured logger using slog with config from viper
+func NewLogger(v *viper.Viper) *slog.Logger {
+	logLevel := v.GetString("LOG_LEVEL")
 
-	var logLevel slog.Level
-	switch level {
+	var level slog.Level
+	switch logLevel {
 	case "DEBUG":
-		logLevel = slog.LevelDebug
+		level = slog.LevelDebug
 	case "INFO":
-		logLevel = slog.LevelInfo
+		level = slog.LevelInfo
 	case "WARN":
-		logLevel = slog.LevelWarn
+		level = slog.LevelWarn
 	case "ERROR":
-		logLevel = slog.LevelError
+		level = slog.LevelError
 	default:
-		logLevel = slog.LevelInfo
+		level = slog.LevelInfo
 	}
 
 	// Create handler options
 	opts := &slog.HandlerOptions{
-		Level: logLevel,
+		Level: level,
 	}
 
 	// Create JSON handler for structured logging

@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/spf13/viper"
 	deliveryhttp "github.com/tnnz20/jgd-task-1/internal/delivery/http"
 	"github.com/tnnz20/jgd-task-1/internal/delivery/http/route"
 	"github.com/tnnz20/jgd-task-1/internal/repository"
@@ -14,6 +15,7 @@ import (
 type BootstrapConfig struct {
 	App    *http.ServeMux
 	Logger *slog.Logger
+	Config *viper.Viper
 }
 
 // Bootstrap initializes all dependencies and configures routes

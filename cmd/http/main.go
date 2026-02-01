@@ -14,8 +14,28 @@ import (
 )
 
 func main() {
-	// Initialize logger
-	logger := config.NewLogger()
+	// Initialize Viper configuration
+	v := config.NewViper()
+
+	// Initialize logger from viper config
+	logger := config.NewLogger(v)
+
+	// Load application config from viper
+	appConfig := config.NewConfig(v)
+
+	// Validate required environment variables
+	if appConfig.App.Port == "" {
+		appConfig.App.Port = "8080"
+	}
+	if appConfig.App.LogLevel == "" {
+		appConfig.App.LogLevel = "INFO"
+	}
+
+	logger.Info("Server initializing",
+		slog.String("environment", appConfig.App.Environment),
+		slog.String("port", appConfig.App.Port),
+		slog.String("log_level", appConfig.App.LogLevel),
+	)
 
 	// Create new ServeMux
 	app := http.NewServeMux()
@@ -24,17 +44,12 @@ func main() {
 	config.Bootstrap(&config.BootstrapConfig{
 		App:    app,
 		Logger: logger,
+		Config: v,
 	})
-
-	// Get port from environment variable or default to 8080
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
 
 	// Create server with configuration
 	server := &http.Server{
-		Addr:         ":" + port,
+		Addr:         ":" + appConfig.App.Port,
 		Handler:      app,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
@@ -47,16 +62,9 @@ func main() {
 	// Start server in goroutine
 	go func() {
 		logger.Info("Server starting",
-			slog.String("addr", "http://localhost:"+port),
+			slog.String("addr", "http://localhost:"+appConfig.App.Port),
 		)
-		logger.Info("API Endpoints",
-			slog.String("health", "GET /health"),
-			slog.String("create", "POST /api/categories"),
-			slog.String("list", "GET /api/categories"),
-			slog.String("get", "GET /api/categories/{id}"),
-			slog.String("update", "PUT /api/categories/{id}"),
-			slog.String("delete", "DELETE /api/categories/{id}"),
-		)
+
 		serverErrors <- server.ListenAndServe()
 	}()
 
@@ -90,6 +98,6 @@ func main() {
 			}
 		}
 
-		logger.Info("Server stopped")
+		logger.Info("Server shutdown complete")
 	}
 }
