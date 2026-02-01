@@ -6,16 +6,15 @@ import (
 	"testing"
 
 	"github.com/tnnz20/jgd-task-1/internal/model"
-	"github.com/tnnz20/jgd-task-1/internal/repository"
+	"github.com/tnnz20/jgd-task-1/internal/repository/memory"
 )
 
-// newTestLogger creates a logger that discards output for testing
 func newTestLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
 }
 
 func TestNewCategoryUseCase(t *testing.T) {
-	repo := repository.NewCategoryRepository()
+	repo := memory.NewCategoryRepository()
 	logger := newTestLogger()
 
 	useCase := NewCategoryUseCase(repo, logger)
@@ -34,61 +33,69 @@ func TestNewCategoryUseCase(t *testing.T) {
 }
 
 func TestCategoryUseCaseCreate(t *testing.T) {
-	repo := repository.NewCategoryRepository()
+	repo := memory.NewCategoryRepository()
 	logger := newTestLogger()
 	useCase := NewCategoryUseCase(repo, logger)
 
 	t.Run("success", func(t *testing.T) {
-		request := &model.CreateCategoryRequest{
-			Name:        "Test Category",
-			Description: "Test Description",
-		}
-
-		response, err := useCase.Create(request)
-		if err != nil {
-			t.Fatalf("Expected no error, got %v", err)
-		}
-
-		if response == nil {
-			t.Fatal("Expected response to not be nil")
-		}
-
-		if response.ID != 1 {
-			t.Errorf("Expected ID to be 1, got %d", response.ID)
-		}
-
-		if response.Name != "Test Category" {
-			t.Errorf("Expected Name to be 'Test Category', got '%s'", response.Name)
-		}
-
-		if response.Description != "Test Description" {
-			t.Errorf("Expected Description to be 'Test Description', got '%s'", response.Description)
-		}
+		testCreateSuccess(t, useCase)
 	})
 
 	t.Run("empty name", func(t *testing.T) {
-		request := &model.CreateCategoryRequest{
-			Name:        "",
-			Description: "Test Description",
-		}
-
-		response, err := useCase.Create(request)
-		if err == nil {
-			t.Fatal("Expected error for empty name")
-		}
-
-		if err != ErrBadRequest {
-			t.Errorf("Expected ErrBadRequest, got %v", err)
-		}
-
-		if response != nil {
-			t.Error("Expected response to be nil")
-		}
+		testCreateEmptyName(t, useCase)
 	})
 }
 
+func testCreateSuccess(t *testing.T, useCase *CategoryUseCase) {
+	request := &model.CreateCategoryRequest{
+		Name:        "Test Category",
+		Description: "Test Description",
+	}
+
+	response, err := useCase.Create(request)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if response == nil {
+		t.Fatal("Expected response to not be nil")
+	}
+
+	if response.ID != 1 {
+		t.Errorf("Expected ID to be 1, got %d", response.ID)
+	}
+
+	if response.Name != "Test Category" {
+		t.Errorf("Expected Name to be 'Test Category', got '%s'", response.Name)
+	}
+
+	if response.Description != "Test Description" {
+		t.Errorf("Expected Description to be 'Test Description', got '%s'", response.Description)
+	}
+}
+
+func testCreateEmptyName(t *testing.T, useCase *CategoryUseCase) {
+	request := &model.CreateCategoryRequest{
+		Name:        "",
+		Description: "Test Description",
+	}
+
+	response, err := useCase.Create(request)
+	if err == nil {
+		t.Fatal("Expected error for empty name")
+	}
+
+	if err != ErrBadRequest {
+		t.Errorf("Expected ErrBadRequest, got %v", err)
+	}
+
+	if response != nil {
+		t.Error("Expected response to be nil")
+	}
+}
+
 func TestCategoryUseCaseGet(t *testing.T) {
-	repo := repository.NewCategoryRepository()
+	repo := memory.NewCategoryRepository()
 	logger := newTestLogger()
 	useCase := NewCategoryUseCase(repo, logger)
 
@@ -139,7 +146,7 @@ func TestCategoryUseCaseGet(t *testing.T) {
 }
 
 func TestCategoryUseCaseList(t *testing.T) {
-	repo := repository.NewCategoryRepository()
+	repo := memory.NewCategoryRepository()
 	logger := newTestLogger()
 	useCase := NewCategoryUseCase(repo, logger)
 
@@ -172,7 +179,7 @@ func TestCategoryUseCaseList(t *testing.T) {
 }
 
 func TestCategoryUseCaseUpdate(t *testing.T) {
-	repo := repository.NewCategoryRepository()
+	repo := memory.NewCategoryRepository()
 	logger := newTestLogger()
 	useCase := NewCategoryUseCase(repo, logger)
 
@@ -183,74 +190,86 @@ func TestCategoryUseCaseUpdate(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		request := &model.UpdateCategoryRequest{
-			ID:          1,
-			Name:        "Updated Name",
-			Description: "Updated Description",
-		}
-
-		response, err := useCase.Update(request)
-		if err != nil {
-			t.Fatalf("Expected no error, got %v", err)
-		}
-
-		if response == nil {
-			t.Fatal("Expected response to not be nil")
-		}
-
-		if response.Name != "Updated Name" {
-			t.Errorf("Expected Name to be 'Updated Name', got '%s'", response.Name)
-		}
-
-		if response.Description != "Updated Description" {
-			t.Errorf("Expected Description to be 'Updated Description', got '%s'", response.Description)
-		}
+		testUpdateSuccess(t, useCase)
 	})
 
 	t.Run("empty name", func(t *testing.T) {
-		request := &model.UpdateCategoryRequest{
-			ID:          1,
-			Name:        "",
-			Description: "Test",
-		}
-
-		response, err := useCase.Update(request)
-		if err == nil {
-			t.Fatal("Expected error for empty name")
-		}
-
-		if err != ErrBadRequest {
-			t.Errorf("Expected ErrBadRequest, got %v", err)
-		}
-
-		if response != nil {
-			t.Error("Expected response to be nil")
-		}
+		testUpdateEmptyName(t, useCase)
 	})
 
 	t.Run("not found", func(t *testing.T) {
-		request := &model.UpdateCategoryRequest{
-			ID:   999,
-			Name: "Test",
-		}
-
-		response, err := useCase.Update(request)
-		if err == nil {
-			t.Fatal("Expected error for non-existing category")
-		}
-
-		if err != ErrNotFound {
-			t.Errorf("Expected ErrNotFound, got %v", err)
-		}
-
-		if response != nil {
-			t.Error("Expected response to be nil")
-		}
+		testUpdateNotFound(t, useCase)
 	})
 }
 
+func testUpdateSuccess(t *testing.T, useCase *CategoryUseCase) {
+	request := &model.UpdateCategoryRequest{
+		ID:          1,
+		Name:        "Updated Name",
+		Description: "Updated Description",
+	}
+
+	response, err := useCase.Update(request)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if response == nil {
+		t.Fatal("Expected response to not be nil")
+	}
+
+	if response.Name != "Updated Name" {
+		t.Errorf("Expected Name to be 'Updated Name', got '%s'", response.Name)
+	}
+
+	if response.Description != "Updated Description" {
+		t.Errorf("Expected Description to be 'Updated Description', got '%s'", response.Description)
+	}
+}
+
+func testUpdateEmptyName(t *testing.T, useCase *CategoryUseCase) {
+	request := &model.UpdateCategoryRequest{
+		ID:          1,
+		Name:        "",
+		Description: "Test",
+	}
+
+	response, err := useCase.Update(request)
+	if err == nil {
+		t.Fatal("Expected error for empty name")
+	}
+
+	if err != ErrBadRequest {
+		t.Errorf("Expected ErrBadRequest, got %v", err)
+	}
+
+	if response != nil {
+		t.Error("Expected response to be nil")
+	}
+}
+
+func testUpdateNotFound(t *testing.T, useCase *CategoryUseCase) {
+	request := &model.UpdateCategoryRequest{
+		ID:   999,
+		Name: "Test",
+	}
+
+	response, err := useCase.Update(request)
+	if err == nil {
+		t.Fatal("Expected error for non-existing category")
+	}
+
+	if err != ErrNotFound {
+		t.Errorf("Expected ErrNotFound, got %v", err)
+	}
+
+	if response != nil {
+		t.Error("Expected response to be nil")
+	}
+}
+
 func TestCategoryUseCaseDelete(t *testing.T) {
-	repo := repository.NewCategoryRepository()
+	repo := memory.NewCategoryRepository()
 	logger := newTestLogger()
 	useCase := NewCategoryUseCase(repo, logger)
 

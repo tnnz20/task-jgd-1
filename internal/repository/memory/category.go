@@ -1,4 +1,4 @@
-package repository
+package memory
 
 import (
 	"errors"
@@ -12,17 +12,17 @@ var (
 	ErrCategoryNotFound = errors.New("category not found")
 )
 
-// CategoryRepository handles data operations for categories
+// CategoryRepository handles data operations for categories in-memory
 type CategoryRepository struct {
 	mu         sync.RWMutex
-	categories []*entity.Category // in-memory storage (empty array)
+	categories []*entity.Category // in-memory storage
 	counter    int                // auto-increment ID
 }
 
-// NewCategoryRepository creates a new category repository
+// NewCategoryRepository creates a new in-memory category repository
 func NewCategoryRepository() *CategoryRepository {
 	return &CategoryRepository{
-		categories: make([]*entity.Category, 0), // initialize empty slice
+		categories: make([]*entity.Category, 0),
 		counter:    0,
 	}
 }

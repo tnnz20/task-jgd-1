@@ -18,12 +18,12 @@ var (
 
 // CategoryUseCase handles business logic for categories
 type CategoryUseCase struct {
-	CategoryRepository *repository.CategoryRepository
+	CategoryRepository repository.CategoryRepositoryInterface
 	Log                *slog.Logger
 }
 
 // NewCategoryUseCase creates a new category use case
-func NewCategoryUseCase(categoryRepository *repository.CategoryRepository, logger *slog.Logger) *CategoryUseCase {
+func NewCategoryUseCase(categoryRepository repository.CategoryRepositoryInterface, logger *slog.Logger) *CategoryUseCase {
 	return &CategoryUseCase{
 		CategoryRepository: categoryRepository,
 		Log:                logger,

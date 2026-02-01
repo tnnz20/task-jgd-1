@@ -1,4 +1,4 @@
-package repository
+package memory
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ func TestNewCategoryRepository(t *testing.T) {
 	}
 }
 
-func TestCategoryRepository_Create(t *testing.T) {
+func TestCategoryRepositoryCreate(t *testing.T) {
 	repo := NewCategoryRepository()
 
 	category := &entity.Category{
@@ -63,7 +63,7 @@ func TestCategoryRepository_Create(t *testing.T) {
 	}
 }
 
-func TestCategoryRepository_FindById(t *testing.T) {
+func TestCategoryRepositoryFindById(t *testing.T) {
 	repo := NewCategoryRepository()
 
 	// Create a category first
@@ -100,7 +100,7 @@ func TestCategoryRepository_FindById(t *testing.T) {
 	}
 }
 
-func TestCategoryRepository_FindAll(t *testing.T) {
+func TestCategoryRepositoryFindAll(t *testing.T) {
 	repo := NewCategoryRepository()
 
 	// Test empty repository
@@ -128,7 +128,7 @@ func TestCategoryRepository_FindAll(t *testing.T) {
 	}
 }
 
-func TestCategoryRepository_Update(t *testing.T) {
+func TestCategoryRepositoryUpdate(t *testing.T) {
 	repo := NewCategoryRepository()
 
 	// Create a category first
@@ -178,7 +178,7 @@ func TestCategoryRepository_Update(t *testing.T) {
 	}
 }
 
-func TestCategoryRepository_Delete(t *testing.T) {
+func TestCategoryRepositoryDelete(t *testing.T) {
 	repo := NewCategoryRepository()
 
 	// Create categories
@@ -221,7 +221,7 @@ func TestCategoryRepository_Delete(t *testing.T) {
 	}
 }
 
-func TestCategoryRepository_CountById(t *testing.T) {
+func TestCategoryRepositoryCountById(t *testing.T) {
 	repo := NewCategoryRepository()
 
 	// Test count for non-existing category
