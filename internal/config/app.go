@@ -9,6 +9,8 @@ import (
 	deliveryhttp "github.com/tnnz20/jgd-task-1/internal/delivery/http"
 	"github.com/tnnz20/jgd-task-1/internal/delivery/http/route"
 	"github.com/tnnz20/jgd-task-1/internal/repository"
+	"github.com/tnnz20/jgd-task-1/internal/repository/memory"
+	"github.com/tnnz20/jgd-task-1/internal/repository/postgres"
 	"github.com/tnnz20/jgd-task-1/internal/usecase"
 )
 
@@ -28,11 +30,11 @@ func Bootstrap(config *BootstrapConfig) {
 	if config.DB != nil {
 		// Use PostgreSQL repository
 		config.Logger.Info("Using PostgreSQL repository")
-		categoryRepo = repository.NewCategoryRepositoryPostgres(config.DB)
+		categoryRepo = postgres.NewCategoryRepository(config.DB)
 	} else {
 		// Use in-memory repository
 		config.Logger.Info("Using in-memory repository")
-		categoryRepo = repository.NewCategoryRepository()
+		categoryRepo = memory.NewCategoryRepository()
 	}
 
 	// Setup use cases
