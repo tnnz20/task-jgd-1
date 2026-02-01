@@ -1,4 +1,4 @@
-.PHONY: run build start clean test test-cover test-verbose docker-build docker-run docker-stop
+.PHONY: run build start clean test test-cover test-verbose docker-build docker-run docker-stop migrate migrate-create migrate-up migrate-down help
 
 # Application name
 APP_NAME=app
@@ -7,15 +7,11 @@ BUILD_DIR=bin
 DOCKER_IMAGE=category-api
 MIGRATE_PATH=./cmd/migrate
 
-# Check OS for cleanup command
+# Detect Windows only for the .exe extension
 ifeq ($(OS),Windows_NT)
-    CLEAN_CMD = if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
-    MKDIR_CMD = if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
-    EXE_EXT = .exe
+	EXE_EXT = .exe
 else
-    CLEAN_CMD = rm -rf $(BUILD_DIR)
-    MKDIR_CMD = mkdir -p $(BUILD_DIR)
-    EXE_EXT = 
+	EXE_EXT = 
 endif
 
 # Run the application directly (development)
@@ -25,7 +21,7 @@ run:
 # Build the application
 build:
 	@echo "Building application..."
-	@$(MKDIR_CMD)
+	@mkdir -p $(BUILD_DIR)
 	@go build -o $(BUILD_DIR)/$(APP_NAME)$(EXE_EXT) $(APP_PATH)
 	@echo "Build complete: $(BUILD_DIR)/$(APP_NAME)$(EXE_EXT)"
 
@@ -37,7 +33,7 @@ start: build
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
-	@$(CLEAN_CMD)
+	@rm -rf $(BUILD_DIR)
 	@echo "Clean complete"
 
 # Run tests
@@ -57,11 +53,9 @@ test-cover-html:
 	go test ./... -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 
-
 # Lint code (requires golangci-lint)
 lint:
 	golangci-lint run
-
 
 # Docker commands
 docker-build:
@@ -80,5 +74,40 @@ docker-stop:
 	docker rm $(DOCKER_IMAGE)
 	@echo "Container stopped and removed"
 
+# --- MIGRATION HELPERS ---
+
+# 1. Helper: If user types just "make migrate", show options
+migrate:
+	@echo "⚠️  Command incomplete. Choose one of the following:"
+	@echo "  make migrate-create name=my_table   - Create a new migration file"
+	@echo "  make migrate-up                     - Run all pending migrations"
+	@echo "  make migrate-down                   - Rollback the last migration"
+
+# 2. Safety Check: Ensure 'name' is provided for create
 migrate-create:
-	@go run $(MIGRATE_PATH) -create $(name)
+ifndef name
+	@echo "❌ Error: Missing migration name."
+	@echo "👉 Usage: make migrate-create name=create_users_table"
+	@exit 1
+else
+	@echo "Creating migration: $(name)..."
+	@go run $(MIGRATE_PATH) -create=$(name)
+endif
+
+migrate-up:
+	@echo "Applying migrations..."
+	@go run $(MIGRATE_PATH) -up
+
+migrate-down:
+	@echo "Rolling back last migration..."
+	@go run $(MIGRATE_PATH) -down
+
+# Help command
+help:
+	@echo "Available commands:"
+	@echo "  make run         - Run the application (development)"
+	@echo "  make build       - Build the application"
+	@echo "  make start       - Build and run the application"
+	@echo "  make clean       - Clean build artifacts"
+	@echo "  make test        - Run tests"
+	@echo "  make migrate     - Show migration help menu"
