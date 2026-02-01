@@ -2,29 +2,42 @@
 
 # Application name
 APP_NAME=app
+APP_PATH=./cmd/http/main.go
 BUILD_DIR=bin
 DOCKER_IMAGE=category-api
+MIGRATE_PATH=./cmd/migrate
+
+# Check OS for cleanup command
+ifeq ($(OS),Windows_NT)
+    CLEAN_CMD = if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+    MKDIR_CMD = if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+    EXE_EXT = .exe
+else
+    CLEAN_CMD = rm -rf $(BUILD_DIR)
+    MKDIR_CMD = mkdir -p $(BUILD_DIR)
+    EXE_EXT = 
+endif
 
 # Run the application directly (development)
 run:
-	go run ./cmd/http
+	@go run $(APP_PATH)
 
 # Build the application
 build:
 	@echo "Building application..."
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
-	go build -o $(BUILD_DIR)/$(APP_NAME).exe ./cmd/http
-	@echo "Build complete: $(BUILD_DIR)/$(APP_NAME).exe"
+	@$(MKDIR_CMD)
+	@go build -o $(BUILD_DIR)/$(APP_NAME)$(EXE_EXT) $(APP_PATH)
+	@echo "Build complete: $(BUILD_DIR)/$(APP_NAME)$(EXE_EXT)"
 
 # Build and run the application
 start: build
 	@echo "Starting application..."
-	./$(BUILD_DIR)/$(APP_NAME).exe
+	./$(BUILD_DIR)/$(APP_NAME)$(EXE_EXT)
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
-	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+	@$(CLEAN_CMD)
 	@echo "Clean complete"
 
 # Run tests
@@ -44,17 +57,11 @@ test-cover-html:
 	go test ./... -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 
-# Format code
-fmt:
-	go fmt ./...
 
 # Lint code (requires golangci-lint)
 lint:
 	golangci-lint run
 
-# Tidy dependencies
-tidy:
-	go mod tidy
 
 # Docker commands
 docker-build:
@@ -73,19 +80,5 @@ docker-stop:
 	docker rm $(DOCKER_IMAGE)
 	@echo "Container stopped and removed"
 
-# Help
-help:
-	@echo "Available commands:"
-	@echo "  make run          - Run the application (development)"
-	@echo "  make build        - Build the application"
-	@echo "  make start        - Build and run the application"
-	@echo "  make clean        - Clean build artifacts"
-	@echo "  make test         - Run tests"
-	@echo "  make test-verbose - Run tests with verbose output"
-	@echo "  make test-cover   - Run tests with coverage"
-	@echo "  make fmt          - Format code"
-	@echo "  make lint         - Lint code"
-	@echo "  make docker-build - Build Docker image"
-	@echo "  make docker-run   - Run Docker container"
-	@echo "  make docker-stop  - Stop and remove Docker container"
-	@echo "  make tidy         - Tidy dependencies"
+migrate-create:
+	@go run $(MIGRATE_PATH) -create $(name)
