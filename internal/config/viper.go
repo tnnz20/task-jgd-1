@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"log" 
 
 	"github.com/spf13/viper"
 )
@@ -35,11 +35,12 @@ func NewViper() *viper.Viper {
 	v.SetConfigFile(".env")
 
 	if err := v.ReadInConfig(); err != nil {
-		// Handle error reading config file
-	if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		// Check if the error is a "Config File Not Found" error
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			// If it's a different error (e.g., syntax error in .env), log it
 			log.Printf("Warning: .env file found but could not be parsed: %v", err)
 		}
-		}
+	}
 	return v
 }
 
