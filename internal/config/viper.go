@@ -36,8 +36,10 @@ func NewViper() *viper.Viper {
 
 	if err := v.ReadInConfig(); err != nil {
 		// Handle error reading config file
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
-	}
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			// If it is a different error (like bad syntax), we still crash.
+			return nil, fmt.Errorf("fatal error config file: %w", err)
+		}
 	return v
 }
 
