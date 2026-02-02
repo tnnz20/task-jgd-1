@@ -40,6 +40,7 @@ func NewViper() *viper.Viper {
 			// If it is a different error (like bad syntax), we still crash.
 			return nil, fmt.Errorf("fatal error config file: %w", err)
 		}
+		}
 	return v
 }
 
